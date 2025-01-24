@@ -193,7 +193,7 @@
    "https://koji.fedoraproject.org"
    "Submit logs from Koji"
    "img/koji-logo.png"
-   "Specify a Koji build ID to fetch and display all relevant logs."
+   "Specify a Koji build ID or task ID with method=buildArch to fetch and display all relevant logs."
    [(input "koji-build-id" "Koji build ID, e.g. 2274591")
     (input "koji-arch" "Architecture, e.g. x86_64")]))
 
