@@ -52,7 +52,10 @@
    [:prompt [:maybe :string]]])
 
 (defn send []
-  (let [data {:prompt @prompt-value}]
+  (let [query-url (-> js/window .-location .-search js/URLSearchParams. (.get "url"))
+        data (if query-url
+               {:prompt query-url}
+               {:prompt @prompt-value})]
     (if (m/validate OutputSchema data)
       (do
         (reset! status "waiting")
@@ -78,9 +81,11 @@
                "Invalid data"
                "Got invalid data from the backend. This is likely a bug.")))))
 
-      (handle-backend-error
-       "Client error"
-       "Something went wrong when preparing a request to server"))))
+      (if (not query-url)
+        (reset! status "No URL provided. Please enter a URL.")
+        (handle-backend-error
+         "Client error"
+         "Something went wrong when preparing a request to server")))))
 
 (defn on-change-prompt [event]
   (let [target (.-target event)
@@ -269,17 +274,22 @@
                "it. You won't need to open the logs at all."))]])
 
 (defn prompt []
-  (cond
-    (= @status "error")
-    (render-error @error-title @error-description)
+  (let [query-url (-> js/window .-location .-search js/URLSearchParams. (.get "url"))]
+    (if query-url
+      (do
+        (send)
+        (loading-screen "Getting a response from the server"))
+      (cond
+        (= @status "error")
+        (render-error @error-title @error-description)
 
-    ;; TODO If we are already in a two-column-layout, we should print only
-    ;; a small loading icon somewhere, not a jumbotron
-    (= @status "waiting")
-    (loading-screen "Getting a response from the server")
+        ;; TODO If we are already in a two-column-layout, we should print only
+        ;; a small loading icon somewhere, not a jumbotron
+        (= @status "waiting")
+        (loading-screen "Getting a response from the server")
 
-    @form
-    (two-column-layout)
+        @form
+        (two-column-layout)
 
-    :else
-    (prompt-only)))
+        :else
+        (prompt-only)))))

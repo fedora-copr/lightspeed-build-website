@@ -7,6 +7,7 @@ from base64 import b64decode
 from datetime import datetime
 from http import HTTPStatus
 from pathlib import Path
+from typing import Optional
 
 import requests
 
@@ -133,7 +134,10 @@ def review(request: Request):
 
 
 @app.get("/explain", response_class=HTMLResponse)
-def explain(request: Request):
+def explain(request: Request, url: Optional[str] = None):
+    # the URL is parsed by frontend, but having it mentioned here
+    # means we have it documented
+    _ = url
     mapping = {"name": "app-prompt", "request": request}
     return template_response("app.html", mapping)
 
